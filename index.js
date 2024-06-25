@@ -2,7 +2,7 @@ const { userRepo } = require("./repo/user.js");
 const express = require("express");
 const app = express();
 const port = 3000;
-const md5 = require('md5');
+const md5 = require("md5");
 
 app.use(express.json());
 
@@ -17,7 +17,10 @@ app.get("/users", async (req, res) => {
       const data = await userRepo.find_userById(id);
       return res.status(200).json(data);
     } catch (error) {
-      return res.status(404).json(error);
+      if (error.code === 100) {
+        return res.status(404).json(error);
+      }
+      return res.status(500).json(error.msg);
     }
   }
 
@@ -25,7 +28,7 @@ app.get("/users", async (req, res) => {
     const data = await userRepo.all_user();
     return res.status(200).json(data);
   } catch (error) {
-    return res.status(404).json(error);
+    return res.status(500).json(error.msg);
   }
 });
 
@@ -33,32 +36,33 @@ app.post("/users", async (req, res) => {
   try {
     const bodyData = {
       userId: req.body.userId,
-      checksum:req.body.checksum
+      checksum: req.body.checksum,
     };
     const dataKey = "12345ABC@#";
     const key = "123454";
     const keyRequest = req.headers.key;
     console.log("user id : ", bodyData.userId);
-    console.log("key header : ",keyRequest);
+    console.log("key header : ", keyRequest);
 
     // validate request body userId field
     if (!bodyData.userId) {
       return res.status(400).json({ error: "missing userId field" });
     }
 
-     // validate request body checksum field
-     if (!bodyData.checksum) {
-        return res.status(400).json({ error: "missing userId field" });
-      }
+    // validate request body checksum field
+    if (!bodyData.checksum) {
+      return res.status(400).json({ error: "missing userId field" });
+    }
 
-      if(bodyData.checksum !== ){
-
-      }
+    /* TODO: Implement checksum validation*/
+    if(bodyData.checksum !== ){
+    // Implementation pending
+    }
 
     // check header key is set
     if (keyRequest == undefined) {
-        return res.status(400).json({ error: "missing header key " });
-      }
+      return res.status(400).json({ error: "missing header key " });
+    }
     // validate header key
     if (keyRequest != key || keyRequest == "") {
       return res.status(400).json({ error: "wrong header key value" });
@@ -68,7 +72,10 @@ app.post("/users", async (req, res) => {
     const data = await userRepo.post_user(bodyData);
     return res.status(201).json(data);
   } catch (error) {
-    return res.status(404).json(error);
+    if (error.code === 100) {
+      return res.status(404).json(error);
+    }
+    return res.status(500).json(error.msg);
   }
 });
 app.listen(port, () => {
