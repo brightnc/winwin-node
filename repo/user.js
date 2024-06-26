@@ -59,6 +59,20 @@ const userRepo = {
       throw error;
     }
   },
+
+  insert_event:async(data)=>{
+    try {
+      const sql = "INSERT INTO user_event (no,event_id, user_id,value_sum) VALUES (?,?, ?,?) ON DUPLICATE KEY UPDATE no=VALUES(no),event_id=VALUES(event_id),value_sum=VALUES(value_sum) ;";
+      const rows = await queryDB(sql, [data.no,data.event_id,data.user_id,data.value]);
+      if (rows.length === 0) {
+        throw { code: 100, msg: "user id not found in register" };
+      }
+      return { code: 101, msg: "success", data: rows };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
 };
 
 module.exports = { userRepo };
